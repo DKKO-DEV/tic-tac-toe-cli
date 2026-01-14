@@ -61,9 +61,10 @@ def minimax(maximizing, board):
         return best_move_score            
 
 def do_best_move(board):
+    # Calls the minimax function to get the index of the best move and does it.
     best_move_score = float("-inf")
     best_move = None
-    
+
     avaliable_tiles = [index for index, tile in enumerate(board) if tile == " "]
     
     for tile in avaliable_tiles:
