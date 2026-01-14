@@ -19,6 +19,66 @@ def check_winner(board, player):
     
     return False
 
+def minimax(maximizing, board):
+    """
+    Recursive game algorithm that has 2 Modes, Minimizing and Maximizing.
+
+    Maximizing: AI's turn, it'll look for the move that gives the best outcome (win) or second best (draw)
+    
+    Minimizing: "Player's Turn" but in reality is the AI simulating the player. It'll try to make the AI lose by doing the move that gives the AI
+    the worst outcome (lose).
+
+    Since it's a tic-tac-toe game, we can use minimax until end-game, but usually you give it a depth of how many recursions it takes. 
+    """
+    #BASE CASE: game is finished
+    if check_winner(board, "O"):
+        return 10.0
+    elif check_winner(board, "X"):
+        return -10.0
+    elif not " " in board:
+        return 0.0
+
+    moves = [index for index, tile in enumerate(board) if tile == " "]
+    # GENERAL CASE
+    if maximizing:
+        best_move_score = float("-inf")
+        for index in moves:
+            board[index] = "O"
+            move_score = minimax(False, board) # assign a score to that move. Call Minimizing
+            board[index] = " " # Backtrack
+            
+            best_move_score = max(move_score, best_move_score)
+        return best_move_score
+
+    else: # Minimizing
+        best_move_score = float("inf")
+        for index in moves:
+            board[index] = "X" 
+            move_score = minimax(True, board) # Call Maximizing
+            board[index] = " " # Backtrack
+
+            best_move_score = min(move_score, best_move_score)
+        return best_move_score            
+
+def do_best_move(board):
+    # Calls the minimax function to get the index of the best move and does it.
+    best_move_score = float("-inf")
+    best_move = None
+
+    avaliable_tiles = [index for index, tile in enumerate(board) if tile == " "]
+    
+    for tile in avaliable_tiles:
+        board[tile] = "O"
+        move_score = minimax(False, board) #We call minimax Maximizing, because it is AI's turn.
+        board[tile] = " "
+
+        if move_score > best_move_score:
+            best_move_score = move_score
+            best_move = tile
+
+    board[best_move] = "O"
+    return None
+
 # MAIN
 def main():
     # Initialize list for the board
@@ -30,22 +90,24 @@ def main():
     player = "X"
     while playing:
         # Ask for the board position and update it if empty
-        valid = False
-        while not valid:
-            try:
-                position = int(input("Enter a number between 1-9 >>> ")) 
-                if not (1 <= position <= 9):
-                    raise ValueError
-                elif not board[position-1] == " ":
-                    raise AssertionError 
-            except ValueError:
-                print("MUST BE AN INTEGER BETWEEN 1-9")
-            except AssertionError:
-                print("TILE IS OCCUPIED")
-            else:
-                valid = True
-
-        board[position-1] = player
+        if player == "O": #AI
+            do_best_move(board)
+        else: #HUMAN
+            valid = False
+            while not valid:
+                try:
+                    position = int(input("Enter a number between 1-9 >>> ")) 
+                    if not (1 <= position <= 9):
+                        raise ValueError
+                    elif not board[position-1] == " ":
+                        raise ValueError 
+                except ValueError:
+                    print("MUST BE AN INTEGER BETWEEN 1-9")
+                except AssertionError:
+                    print("TILE IS OCCUPIED")
+                else:
+                    valid = True
+            board[position-1] = player
 
         # Check Winner
         player_won = check_winner(board, player)
